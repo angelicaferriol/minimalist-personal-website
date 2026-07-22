@@ -6,10 +6,10 @@ export default function Home() {
     <div className="flex flex-col gap-12">
       <section className="flex flex-col gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">
-          hey, i'm angelica.
+          hey, this is n.
         </h1>
         <p className="text-muted-foreground leading-relaxed">
-          i'm a software engineer and designer. i love building minimalist interfaces, writing tiny thoughts, and reading good books. this is my corner of the internet.
+          a computer science student and dev intern, who loves building and designing stuffs, writing tiny thoughts, and reading good books. this is my corner of the internet.
         </p>
       </section>
 
@@ -23,12 +23,16 @@ export default function Home() {
             <Link href="/projects" className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4">minimalist personal site</Link>
           </li>
           <li className="flex items-center justify-between group">
+            <span className="text-muted-foreground">studying</span>
+            <Link href="/projects" className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4">data science and machine learning</Link>
+          </li>
+          <li className="flex items-center justify-between group">
             <span className="text-muted-foreground">reading</span>
-            <span className="font-medium">the design of everyday things</span>
+            <span className="font-medium">psychology of money</span>
           </li>
           <li className="flex items-center justify-between group">
             <span className="text-muted-foreground">listening</span>
-            <span className="font-medium">blonde - frank ocean</span>
+            <Link href="https://open.spotify.com/track/2B8YSN8znuRfYSkwJusNfQ?si=fdc026eeb9e344aa" target="_blank" className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4 text-right">you dont have to be a star - 109</Link>
           </li>
         </ul>
       </section>
@@ -38,13 +42,13 @@ export default function Home() {
           Connect
         </h2>
         <div className="flex gap-4">
-          <Link href="https://github.com" target="_blank" className="flex items-center gap-1 text-sm font-medium hover:text-muted-foreground transition-colors">
+          <Link href="https://github.com/angelicaferriol" target="_blank" className="flex items-center gap-1 text-sm font-medium hover:text-muted-foreground transition-colors">
             Github <ArrowUpRight className="w-3 h-3" />
           </Link>
-          <Link href="https://twitter.com" target="_blank" className="flex items-center gap-1 text-sm font-medium hover:text-muted-foreground transition-colors">
-            Twitter <ArrowUpRight className="w-3 h-3" />
+          <Link href="https://www.linkedin.com/in/angelicaferriol/" target="_blank" className="flex items-center gap-1 text-sm font-medium hover:text-muted-foreground transition-colors">
+            LinkedIn <ArrowUpRight className="w-3 h-3" />
           </Link>
-          <Link href="mailto:hello@example.com" className="flex items-center gap-1 text-sm font-medium hover:text-muted-foreground transition-colors">
+          <Link href="mailto:angelicaferriol712@gmail.com" className="flex items-center gap-1 text-sm font-medium hover:text-muted-foreground transition-colors">
             Email <ArrowUpRight className="w-3 h-3" />
           </Link>
         </div>

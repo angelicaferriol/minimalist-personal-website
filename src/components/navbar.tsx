@@ -1,23 +1,66 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./theme-toggle";
 
 export function Navbar() {
+  const pathname = usePathname();
+
+  // Helper function to check if a link is active
+  const isActive = (path: string) => {
+    return pathname === path || pathname?.startsWith(`${path}/`);
+  };
+
   return (
     <header className="mb-14 flex items-center justify-between">
-      <Link href="/" className="font-semibold text-lg hover:opacity-80 transition-opacity">
-        Angelica
+      <Link href="/" className="hover:opacity-80 transition-opacity flex items-center gap-2">
+        <img
+          src="/cat-transparent.png"
+          alt="Pixel Kitten"
+          className="w-40 h-auto object-contain"
+        />
       </Link>
-      <nav className="flex items-center gap-4 text-sm text-muted-foreground">
-        <Link href="/writing" className="hover:text-foreground transition-colors">
+      <nav className="flex items-center gap-4 text-sm text-muted-foreground font-medium">
+        <Link
+          href="/writing"
+          className={`hover:text-foreground transition-all duration-300 pb-1 border-b-2 ${isActive("/writing")
+              ? "text-foreground border-foreground"
+              : "border-transparent"
+            }`}
+        >
           Writing
         </Link>
-        <Link href="/reading" className="hover:text-foreground transition-colors">
+        <Link
+          href="/reading"
+          className={`hover:text-foreground transition-all duration-300 pb-1 border-b-2 ${isActive("/reading")
+              ? "text-foreground border-foreground"
+              : "border-transparent"
+            }`}
+        >
           Reading
         </Link>
-        <Link href="/projects" className="hover:text-foreground transition-colors">
+        <Link
+          href="/gallery"
+          className={`hover:text-foreground transition-all duration-300 pb-1 border-b-2 ${isActive("/gallery")
+              ? "text-foreground border-foreground"
+              : "border-transparent"
+            }`}
+        >
+          Gallery
+        </Link>
+        <Link
+          href="/projects"
+          className={`hover:text-foreground transition-all duration-300 pb-1 border-b-2 ${isActive("/projects")
+              ? "text-foreground border-foreground"
+              : "border-transparent"
+            }`}
+        >
           Projects
         </Link>
-        <ThemeToggle />
+        <div className="pl-2">
+          <ThemeToggle />
+        </div>
       </nav>
     </header>
   );
