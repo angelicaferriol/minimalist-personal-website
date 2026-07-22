@@ -179,6 +179,21 @@ export const getBookBySlugOrId = async (slugOrId: string) => {
   };
 };
 
+const VIDEO_EXTENSIONS = ['.mp4', '.mov', '.webm', '.avi', '.mkv', '.m4v', '.ogv'];
+
+function getMediaType(url: string): 'video' | 'image' {
+  try {
+    // Strip query params and get the pathname
+    const pathname = new URL(url).pathname.toLowerCase();
+    if (VIDEO_EXTENSIONS.some(ext => pathname.endsWith(ext))) return 'video';
+  } catch {
+    // If URL parsing fails, check the raw string
+    const lower = url.toLowerCase();
+    if (VIDEO_EXTENSIONS.some(ext => lower.includes(ext))) return 'video';
+  }
+  return 'image';
+}
+
 export const getGalleryImages = async () => {
   if (!process.env.NOTION_GALLERY_DB_ID) {
     console.warn("NOTION_GALLERY_DB_ID is missing");
@@ -202,17 +217,25 @@ export const getGalleryImages = async () => {
     const dateProp = page.properties.Date;
     const imageProp = page.properties.Image || page.properties['Files & media'];
 
-    let imageUrl = null;
+    const media: { url: string; type: 'image' | 'video' }[] = [];
     if (imageProp?.files && imageProp.files.length > 0) {
-      const file = imageProp.files[0];
-      imageUrl = file.file ? file.file.url : file.external.url;
+      for (const file of imageProp.files) {
+        const url = file.file ? file.file.url : file.external?.url;
+        if (url) {
+          media.push({ url, type: getMediaType(url) });
+        }
+      }
     }
+
+    const cover = media[0] || null;
 
     return {
       id: page.id,
       title: titleProp?.title?.[0]?.plain_text || '',
       date: dateProp?.date?.start || (page as any).created_time,
-      imageUrl,
+      imageUrl: cover?.url || null,
+      coverType: cover?.type || 'image',
+      media, // all media items for carousel (images + videos)
     };
-  }).filter((img: any) => img.imageUrl !== null);
+  }).filter((item: any) => item.imageUrl !== null);
 };

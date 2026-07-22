@@ -21,7 +21,15 @@ export default async function WritingPage() {
     groupedEssays[category].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
 
-  const categories = Object.keys(groupedEssays).sort();
+  const CATEGORY_ORDER = ['Personal Essay'];
+  const categories = Object.keys(groupedEssays).sort((a, b) => {
+    const ai = CATEGORY_ORDER.indexOf(a);
+    const bi = CATEGORY_ORDER.indexOf(b);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return a.localeCompare(b);
+  });
 
   return (
     <div className="flex flex-col gap-12 w-full max-w-2xl mx-auto py-8">
