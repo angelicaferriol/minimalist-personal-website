@@ -30,10 +30,6 @@ export default function Home() {
             <span className="text-muted-foreground">reading</span>
             <span className="font-medium">psychology of money</span>
           </li>
-          <li className="flex items-center justify-between group">
-            <span className="text-muted-foreground">listening</span>
-            <Link href="https://open.spotify.com/track/2B8YSN8znuRfYSkwJusNfQ?si=fdc026eeb9e344aa" target="_blank" className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4 text-right">you dont have to be a star - 109</Link>
-          </li>
         </ul>
       </section>
 
