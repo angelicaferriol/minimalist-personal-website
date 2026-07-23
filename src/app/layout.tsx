@@ -9,11 +9,38 @@ const inter = Inter({
   variable: "--font-sans",
 });
 
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Angelica Ferriol",
-  description: "A minimalist personal website and blog.",
+  description: "This is Angelica's personal space in the internet.",
   icons: {
-    icon: "/cat-transparent.png",
+    icon: "/icon.svg",
+  },
+  openGraph: {
+    title: "Angelica Ferriol",
+    description: "This is Angelica's personal space in the internet.",
+    url: "https://angelicaferriol.com", // Fallback domain or let Next.js automatically resolve it
+    siteName: "Angelica Ferriol",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 962, // 1200 / (4964 / 3980) = 962
+        alt: "Angelica's personal logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Angelica Ferriol",
+    description: "This is Angelica's personal space in the internet.",
+    images: ["/og-image.png"],
   },
 };
 
