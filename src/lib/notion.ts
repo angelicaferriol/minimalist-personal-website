@@ -40,11 +40,37 @@ export const getEssays = async () => {
     throw error;
   }
 
-  const essays = response.results.map((page: any) => {
+  const essays = await Promise.all(response.results.map(async (page: any) => {
     // Dynamically check for different property names to avoid crashes
     const titleProp = page.properties.Title || page.properties.Name;
     const dateProp = page.properties['Date Created'] || page.properties.Date;
     const slugProp = page.properties.Slug;
+    const category = page.properties.Category?.select?.name || 'Uncategorized';
+
+    let thoughts: any[] = [];
+    if (category === 'Daily Thoughts') {
+      try {
+        const blocksResponse = await notion.blocks.children.list({
+          block_id: page.id,
+        });
+        thoughts = blocksResponse.results
+          .map((block: any) => {
+            const type = block.type;
+            const richText = block[type]?.rich_text;
+            if (!richText) return null;
+            const text = richText.map((t: any) => t.plain_text).join('');
+            if (!text.trim()) return null;
+            return {
+              id: block.id,
+              text,
+              createdTime: block.created_time,
+            };
+          })
+          .filter(Boolean);
+      } catch (error) {
+        console.error(`Failed to fetch blocks for page ${page.id}:`, error);
+      }
+    }
 
     return {
       id: page.id,
@@ -53,9 +79,11 @@ export const getEssays = async () => {
       slug: slugProp?.rich_text?.[0]?.plain_text || page.id,
       date: dateProp?.date?.start || page.created_time,
       description: page.properties.Description?.rich_text?.[0]?.plain_text || '',
-      category: page.properties.Category?.select?.name || 'Uncategorized',
+      category,
+      createdTime: page.created_time,
+      thoughts,
     };
-  });
+  }));
 
   return essays;
 };
@@ -297,6 +325,10 @@ export const getGalleryImages = async () => {
   }
 
   return response.results.map((page: any) => {
+    // Skip if Status is Archived
+    const status = page.properties.Status?.select?.name || page.properties.Status?.status?.name;
+    if (status === 'Archived') return null;
+
     // The user might have named their properties differently
     const titleProp = page.properties.Title || page.properties.Name || page.properties['image description'];
     const dateProp = page.properties.Date;
@@ -322,5 +354,5 @@ export const getGalleryImages = async () => {
       coverType: cover?.type || 'image',
       media, // all media items for carousel (images + videos)
     };
-  }).filter((item: any) => item.imageUrl !== null);
+  }).filter((item: any) => item !== null && item.imageUrl !== null);
 };

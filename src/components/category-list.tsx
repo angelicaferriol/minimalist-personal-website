@@ -11,11 +11,13 @@ export function CategoryList({ category, essays }: { category: string, essays: a
   const hasMore = essays.length > 5;
 
   return (
-    <section className="flex flex-col gap-4">
-      <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-        {category}
-      </h2>
-      <ul className="flex flex-col gap-1">
+    <section className="flex flex-col gap-4 w-full">
+      <div>
+        <h2 className="text-xs font-semibold tracking-widest uppercase bg-foreground text-background px-2.5 py-1 inline-block">
+          {category}
+        </h2>
+      </div>
+      <ul className="flex flex-col gap-1 w-full">
         {displayEssays.map((essay: any) => (
           <li key={essay.id}>
             <Link 

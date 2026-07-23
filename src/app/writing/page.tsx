@@ -1,5 +1,6 @@
 import { getEssays } from '@/lib/notion';
 import { CategoryList } from '@/components/category-list';
+import { DailyThoughts } from '@/components/daily-thoughts';
 
 export const revalidate = 60;
 
@@ -21,7 +22,7 @@ export default async function WritingPage() {
     groupedEssays[category].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
 
-  const CATEGORY_ORDER = ['Personal Essay'];
+  const CATEGORY_ORDER = ['Personal Essay', 'Daily Thoughts'];
   const categories = Object.keys(groupedEssays).sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a);
     const bi = CATEGORY_ORDER.indexOf(b);
@@ -37,9 +38,16 @@ export default async function WritingPage() {
         <p className="text-muted-foreground text-sm">No essays found yet. Add some in Notion!</p>
       ) : (
         <div className="flex flex-col gap-14">
-          {categories.map(category => (
-            <CategoryList key={category} category={category} essays={groupedEssays[category]} />
-          ))}
+          {categories.map(category => {
+            if (category === 'Daily Thoughts') {
+              return (
+                <DailyThoughts key={category} essays={groupedEssays[category]} />
+              );
+            }
+            return (
+              <CategoryList key={category} category={category} essays={groupedEssays[category]} />
+            );
+          })}
         </div>
       )}
     </div>

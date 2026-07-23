@@ -14,9 +14,11 @@ export default function Home() {
       </section>
 
       <section className="flex flex-col gap-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Currently
-        </h2>
+        <div>
+          <h2 className="text-xs font-semibold tracking-widest uppercase bg-foreground text-background px-2.5 py-1 inline-block">
+            Currently
+          </h2>
+        </div>
         <ul className="flex flex-col gap-3 text-sm">
           <li className="flex items-center justify-between group">
             <span className="text-muted-foreground">building</span>
@@ -27,16 +29,18 @@ export default function Home() {
             <Link href="/projects" className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4">data science and machine learning</Link>
           </li>
           <li className="flex items-center justify-between group">
-            <span className="text-muted-foreground">reading</span>
-            <span className="font-medium">psychology of money</span>
+            <span className="text-muted-foreground">listening</span>
+            <Link href="https://open.spotify.com/track/2B8YSN8znuRfYSkwJusNfQ?si=fdc026eeb9e344aa" target="_blank" className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4 text-right">you dont have to be a star - 109</Link>
           </li>
         </ul>
       </section>
 
       <section className="flex flex-col gap-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Connect
-        </h2>
+        <div>
+          <h2 className="text-xs font-semibold tracking-widest uppercase bg-foreground text-background px-2.5 py-1 inline-block">
+            Connect
+          </h2>
+        </div>
         <div className="flex gap-4">
           <Link href="https://github.com/angelicaferriol" target="_blank" className="flex items-center gap-1 text-sm font-medium hover:text-muted-foreground transition-colors">
             Github <ArrowUpRight className="w-3 h-3" />

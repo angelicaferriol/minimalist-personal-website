@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, X, Layers, Play } from 'lucide-react';
+import { HeicImage, isHeicUrl } from './heic-image';
+import { LoadingImage } from './loading-image';
 
 interface MediaItem {
   url: string;
@@ -74,11 +76,18 @@ export function GalleryGrid({ images }: { images: any[] }) {
                   preload="metadata"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-              ) : (
-                <img 
+              ) : isHeicUrl(image.imageUrl) ? (
+                <HeicImage 
                   src={image.imageUrl} 
                   alt={image.title} 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <LoadingImage 
+                  src={image.imageUrl} 
+                  alt={image.title} 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  wrapperClassName="w-full h-full"
                 />
               )}
               {/* Video play icon overlay */}
@@ -154,11 +163,18 @@ export function GalleryGrid({ images }: { images: any[] }) {
                 playsInline
                 className="max-w-full max-h-[85vh] object-contain rounded-md shadow-2xl pointer-events-auto"
               />
-            ) : (
-              <img 
+            ) : isHeicUrl(currentMedia?.url || selectedPost.imageUrl) ? (
+              <HeicImage 
                 src={currentMedia?.url || selectedPost.imageUrl} 
                 alt={selectedPost.title} 
                 className="max-w-full max-h-[85vh] object-contain rounded-md shadow-2xl pointer-events-auto"
+              />
+            ) : (
+              <LoadingImage 
+                src={currentMedia?.url || selectedPost.imageUrl} 
+                alt={selectedPost.title} 
+                className="max-w-full max-h-[85vh] object-contain rounded-md shadow-2xl pointer-events-auto"
+                wrapperClassName="flex items-center justify-center max-w-full max-h-[85vh]"
               />
             )}
 
