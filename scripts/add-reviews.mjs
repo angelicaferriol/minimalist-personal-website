@@ -1,5 +1,5 @@
-// Script to update existing Notion pages with Goodreads reviews
-// For books that were already in Notion before the import (skipped as duplicates)
+// Script to force-update Notion pages with reviews from Goodreads CSV
+// This handles pages that have empty blocks or were previously skipped
 
 import { Client } from '@notionhq/client';
 import { readFileSync } from 'fs';
@@ -58,7 +58,7 @@ function parseCSV(csvContent) {
   return rows;
 }
 
-// ── Clean HTML from review ──────────────────────────────────────────
+// ── Clean HTML ──────────────────────────────────────────────────────
 function cleanReview(html) {
   if (!html) return '';
   return html
@@ -73,9 +73,9 @@ function cleanReview(html) {
     .trim();
 }
 
-// ── Get ALL existing pages with their IDs ───────────────────────────
+// ── Get all existing pages ──────────────────────────────────────────
 async function getExistingPages() {
-  const pages = new Map(); // title (lowercase) -> page_id
+  const pages = new Map();
   let cursor;
 
   do {
@@ -96,10 +96,28 @@ async function getExistingPages() {
   return pages;
 }
 
-// ── Check if page already has content ───────────────────────────────
-async function pageHasContent(pageId) {
-  const blocks = await notion.blocks.children.list({ block_id: pageId, page_size: 1 });
-  return blocks.results.length > 0;
+// ── Check if page has REAL (non-empty) content ──────────────────────
+async function pageHasRealContent(pageId) {
+  const blocks = await notion.blocks.children.list({ block_id: pageId, page_size: 100 });
+  
+  for (const block of blocks.results) {
+    // Check if any block has actual text content
+    const richText = block[block.type]?.rich_text;
+    if (richText && richText.length > 0) {
+      const text = richText.map(t => t.plain_text || '').join('').trim();
+      if (text.length > 0) return true;
+    }
+  }
+  return false;
+}
+
+// ── Delete all blocks from a page ───────────────────────────────────
+async function clearPageBlocks(pageId) {
+  const blocks = await notion.blocks.children.list({ block_id: pageId, page_size: 100 });
+  for (const block of blocks.results) {
+    await notion.blocks.delete({ block_id: block.id });
+    await new Promise(r => setTimeout(r, 100));
+  }
 }
 
 // ── Build review blocks ─────────────────────────────────────────────
@@ -121,14 +139,13 @@ function buildReviewBlocks(reviewText) {
 
 // ── Main ────────────────────────────────────────────────────────────
 async function main() {
-  console.log('📝 Adding missing reviews to Notion pages\n');
+  console.log('📝 Force-updating reviews on Notion pages\n');
 
-  // Parse CSV
   const csvPath = new URL('../src/app/reading/goodreads_library_export.csv', import.meta.url);
   const csvContent = readFileSync(csvPath, 'utf-8');
   const books = parseCSV(csvContent);
 
-  // Build a map of title -> review from CSV
+  // Build review map
   const reviewMap = new Map();
   for (const book of books) {
     const title = (book['Title'] || '').toLowerCase();
@@ -137,15 +154,14 @@ async function main() {
       reviewMap.set(title, review);
     }
   }
-  console.log(`📖 Found ${reviewMap.size} books with reviews in CSV`);
+  console.log(`📖 ${reviewMap.size} books with reviews in CSV`);
 
-  // Get all existing Notion pages
   const existingPages = await getExistingPages();
-  console.log(`📚 Found ${existingPages.size} books in Notion\n`);
+  console.log(`📚 ${existingPages.size} books in Notion\n`);
 
   let updated = 0;
+  let skippedHasReview = 0;
   let skippedNoReview = 0;
-  let skippedHasContent = 0;
   let errors = 0;
 
   for (const [title, pageId] of existingPages) {
@@ -157,16 +173,20 @@ async function main() {
     }
 
     try {
-      // Check if page already has content (don't overwrite)
-      const hasContent = await pageHasContent(pageId);
-      if (hasContent) {
-        console.log(`⏭️  Already has content: ${title}`);
-        skippedHasContent++;
+      // Check if page has REAL content (not just empty blocks)
+      const hasReal = await pageHasRealContent(pageId);
+      
+      if (hasReal) {
+        console.log(`⏭️  Has review: ${title}`);
+        skippedHasReview++;
         await new Promise(r => setTimeout(r, 200));
         continue;
       }
 
-      // Append review blocks
+      // Clear any empty blocks first
+      await clearPageBlocks(pageId);
+
+      // Add review
       const blocks = buildReviewBlocks(review);
       if (blocks.length === 0) {
         skippedNoReview++;
@@ -189,10 +209,10 @@ async function main() {
   }
 
   console.log(`\n${'─'.repeat(40)}`);
-  console.log(`✅ Updated:              ${updated}`);
-  console.log(`⏭️  Already has content:  ${skippedHasContent}`);
-  console.log(`📭 No review in CSV:     ${skippedNoReview}`);
-  console.log(`❌ Errors:               ${errors}`);
+  console.log(`✅ Updated:         ${updated}`);
+  console.log(`⏭️  Already good:    ${skippedHasReview}`);
+  console.log(`📭 No review in CSV: ${skippedNoReview}`);
+  console.log(`❌ Errors:          ${errors}`);
 }
 
 main().catch(console.error);
