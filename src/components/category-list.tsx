@@ -18,26 +18,40 @@ export function CategoryList({ category, essays }: { category: string, essays: a
         </h2>
       </div>
       <ul className="flex flex-col gap-1 w-full">
-        {displayEssays.map((essay: any) => (
-          <li key={essay.id}>
-            <Link 
-              href={`/writing/${essay.slug}`} 
-              className="group flex flex-row items-center justify-between py-2 -mx-2 px-2 rounded-md hover:bg-muted/30 transition-colors"
-            >
-              <h3 className="text-sm font-medium text-foreground/90 group-hover:text-foreground transition-colors flex items-center gap-1.5">
-                {essay.title}
-                <ArrowUpRight className="w-3.5 h-3.5 opacity-0 -translate-y-0.5 translate-x-0.5 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all duration-300 text-muted-foreground" />
-              </h3>
-              <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
-                {new Date(essay.date).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric'
-                })}
-              </time>
-            </Link>
-          </li>
-        ))}
+        {displayEssays.map((essay: any) => {
+          const isArchive = category.toLowerCase() === 'archives';
+          const href = isArchive ? (essay.url || '#') : `/writing/${essay.slug}`;
+          const isExternal = isArchive;
+
+          return (
+            <li key={essay.id}>
+              <Link 
+                href={href} 
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
+                className="group flex flex-row items-center justify-between py-2 -mx-2 px-2 rounded-md hover:bg-muted/30 transition-colors"
+              >
+                <h3 className="text-sm font-medium text-foreground/90 group-hover:text-foreground transition-colors flex items-center gap-1.5">
+                  {essay.title}
+                  <ArrowUpRight className="w-3.5 h-3.5 opacity-0 -translate-y-0.5 translate-x-0.5 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all duration-300 text-muted-foreground" />
+                </h3>
+                {isArchive ? (
+                  <span className="text-[11px] font-medium tracking-wide text-muted-foreground border border-border/80 px-2.5 py-1 rounded bg-muted/40 group-hover:bg-foreground group-hover:text-background transition-colors duration-200 shrink-0">
+                    view folder
+                  </span>
+                ) : (
+                  <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                    {new Date(essay.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </time>
+                )}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
       {hasMore && (
         <button 

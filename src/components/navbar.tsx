@@ -13,7 +13,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="mb-14 flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
+    <header className="mb-4 md:mb-6 flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
       <Link href="/" className="hover:opacity-80 transition-opacity flex items-center gap-2">
         <img
           src="/cat-transparent.png"

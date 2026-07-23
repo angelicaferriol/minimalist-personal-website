@@ -80,26 +80,15 @@ export function DailyThoughts({ essays }: { essays: ThoughtPage[] }) {
   // Sort dates descending
   const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
-  // Function to format Date to MM/DD/YY
+  // Function to format Date to match Personal Essay (e.g., Jul 23, 2026)
   const formatDateHeader = (dateStr: string) => {
-    const parts = dateStr.split('-');
-    if (parts.length === 3 && parts[0].length === 4) {
-      const [year, month, day] = parts;
-      const yy = year.slice(-2);
-      return `${month}/${day}/${yy}`;
-    }
-    
-    // Check if it's already MM/DD/YY
-    if (/^\d{2}\/\d{2}\/\d{2}$/.test(dateStr)) {
-      return dateStr;
-    }
-
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return dateStr;
-    const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const dd = String(date.getUTCDate()).padStart(2, '0');
-    const yy = String(date.getUTCFullYear()).slice(-2);
-    return `${mm}/${dd}/${yy}`;
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   // Limit display to first 3 dates initially, unless expanded
@@ -125,9 +114,9 @@ export function DailyThoughts({ essays }: { essays: ThoughtPage[] }) {
 
           return (
             <div key={dateKey} className="flex flex-col">
-              {/* Left-aligned Date Header */}
+              {/* Left-aligned Date Header matching Personal Essay style/format */}
               <div className="text-left my-2">
-                <time className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
                   {formatDateHeader(dateKey)}
                 </time>
               </div>
@@ -138,9 +127,9 @@ export function DailyThoughts({ essays }: { essays: ThoughtPage[] }) {
               {/* List of thoughts */}
               <ul className="flex flex-col gap-3 py-1">
                 {dayThoughts.map(thought => (
-                  <li key={thought.id} className="flex items-start gap-6 py-1">
-                    {/* Timestamp column */}
-                    <div className="w-10 shrink-0 pt-0.5">
+                  <li key={thought.id} className="flex items-start py-1">
+                    {/* Timestamp column with margin-right to prevent overlap */}
+                    <div className="w-10 shrink-0 pt-0.5 mr-6 text-left">
                       <ThoughtTime createdTime={thought.createdTime} />
                     </div>
                     

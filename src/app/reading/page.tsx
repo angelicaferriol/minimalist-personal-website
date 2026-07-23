@@ -11,7 +11,7 @@ export default async function ReadingPage() {
   const upNext = books.filter(b => b.status === "Not started" || b.status === "To Be Read");
 
   return (
-    <div className="flex flex-col gap-12 w-full max-w-2xl mx-auto py-8">
+    <div className="flex flex-col gap-12 w-full max-w-2xl mx-auto pt-0 pb-8">
       {books.length === 0 ? (
         <p className="text-muted-foreground text-sm">No books found yet. Add some in Notion!</p>
       ) : (

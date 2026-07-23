@@ -58,7 +58,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="max-w-2xl mx-auto w-full px-6 py-12 md:py-20 flex-1 flex flex-col">
+          <div className="max-w-2xl mx-auto w-full px-6 py-12 md:py-20 flex-1 flex flex-col justify-center">
             <Navbar />
             <main className="flex-1 flex flex-col">
               {children}

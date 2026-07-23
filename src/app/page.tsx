@@ -22,11 +22,18 @@ export default function Home() {
         <ul className="flex flex-col gap-3 text-sm">
           <li className="flex items-center justify-between group">
             <span className="text-muted-foreground">building</span>
-            <Link href="/projects" className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4">minimalist personal site</Link>
+            <Link 
+              href="https://github.com/angelicaferriol/profile-up" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4"
+            >
+              profile-up
+            </Link>
           </li>
           <li className="flex items-center justify-between group">
             <span className="text-muted-foreground">studying</span>
-            <Link href="/projects" className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4">data science and machine learning</Link>
+            <span className="font-medium">data science and machine learning</span>
           </li>
           <li className="flex items-center justify-between group">
             <span className="text-muted-foreground">listening</span>

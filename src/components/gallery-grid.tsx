@@ -10,7 +10,8 @@ interface MediaItem {
   type: 'image' | 'video';
 }
 
-export function GalleryGrid({ images }: { images: any[] }) {
+export function GalleryGrid({ title, images }: { title: string, images: any[] }) {
+  const [expanded, setExpanded] = useState(false);
   // Which gallery post is open in the lightbox (null = closed)
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   // Which media item within the carousel of the selected post
@@ -20,6 +21,9 @@ export function GalleryGrid({ images }: { images: any[] }) {
   const mediaItems: MediaItem[] = selectedPost?.media ?? [];
   const totalCarouselItems = mediaItems.length;
   const currentMedia = mediaItems[carouselIndex] ?? null;
+
+  const displayImages = expanded ? images : images.slice(0, 9);
+  const hasMore = images.length > 9;
 
   // Reset carousel index when opening a different post
   useEffect(() => {
@@ -50,10 +54,18 @@ export function GalleryGrid({ images }: { images: any[] }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex, handleCarouselNext, handleCarouselPrev]);
 
+  const isArt = title.toLowerCase() === 'art';
+
   return (
-    <>
+    <section className="flex flex-col gap-4 w-full">
+      <div>
+        <h2 className="text-xs font-semibold tracking-widest uppercase bg-foreground text-background px-2.5 py-1 inline-block">
+          {title}
+        </h2>
+      </div>
       <div className="grid grid-cols-3 gap-1 sm:gap-2">
-        {images.map((image, index) => {
+        {displayImages.map((image) => {
+          const index = images.findIndex((img) => img.id === image.id);
           const dateString = new Date(image.date).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
@@ -68,6 +80,9 @@ export function GalleryGrid({ images }: { images: any[] }) {
               className="relative aspect-square overflow-hidden bg-muted rounded-sm group cursor-pointer"
               onClick={() => setSelectedIndex(index)}
             >
+              {isArt && (
+                <div className="absolute inset-0 border border-foreground/10 rounded-sm pointer-events-none z-10" />
+              )}
               {isVideo ? (
                 <video
                   src={image.imageUrl}
@@ -118,6 +133,14 @@ export function GalleryGrid({ images }: { images: any[] }) {
           );
         })}
       </div>
+      {hasMore && (
+        <button 
+          onClick={() => setExpanded(!expanded)}
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors self-start py-1 mt-2 flex items-center gap-1"
+        >
+          {expanded ? "See less" : `See more (${images.length - 9})`}
+        </button>
+      )}
 
       {/* Lightbox Modal */}
       {selectedPost && (
@@ -222,6 +245,6 @@ export function GalleryGrid({ images }: { images: any[] }) {
           )}
         </div>
       )}
-    </>
+    </section>
   );
 }

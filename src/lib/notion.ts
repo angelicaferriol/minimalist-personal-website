@@ -82,6 +82,7 @@ export const getEssays = async () => {
       category,
       createdTime: page.created_time,
       thoughts,
+      url: page.properties.URL?.url || null,
     };
   }));
 
@@ -345,6 +346,7 @@ export const getGalleryImages = async () => {
     }
 
     const cover = media[0] || null;
+    const category = page.properties.Category?.select?.name || 'Uncategorized';
 
     return {
       id: page.id,
@@ -353,6 +355,62 @@ export const getGalleryImages = async () => {
       imageUrl: cover?.url || null,
       coverType: cover?.type || 'image',
       media, // all media items for carousel (images + videos)
+      category,
     };
   }).filter((item: any) => item !== null && item.imageUrl !== null);
+};
+
+export const getProjects = async () => {
+  if (!process.env.NOTION_PROJECTS_DB_ID) {
+    console.warn("NOTION_PROJECTS_DB_ID is missing");
+    return [];
+  }
+  
+  const databaseId = process.env.NOTION_PROJECTS_DB_ID;
+  let response;
+
+  try {
+    response = await notion.databases.query({
+      database_id: databaseId,
+      sorts: [
+        {
+          timestamp: 'created_time',
+          direction: 'ascending',
+        },
+      ],
+    });
+  } catch (error) {
+    if (isNotionAuthError(error)) {
+      console.warn('NOTION_API_KEY is invalid or revoked; returning no projects');
+      return [];
+    }
+    if (isNotionUnavailableError(error)) {
+      console.warn('NOTION_PROJECTS_DB_ID is not shared with the integration or does not exist; returning no projects');
+      return [];
+    }
+    throw error;
+  }
+
+  return response.results.map((page: any) => {
+    const nameProp = page.properties.Name;
+    const linkProp = page.properties.Link;
+    const textProp = page.properties.Text;
+    const techProp = page.properties['Tech Stacks'];
+    const categoryProp = page.properties.Category;
+
+    const name = nameProp?.title?.[0]?.plain_text || 'Untitled';
+    const link = linkProp?.url || '#';
+    const description = textProp?.rich_text?.[0]?.plain_text || '';
+    const techStacks = techProp?.multi_select?.map((s: any) => s.name) || [];
+    const category = categoryProp?.select?.name || 'Uncategorized';
+
+    return {
+      id: page.id,
+      name,
+      link,
+      description,
+      techStacks,
+      category,
+    };
+  });
 };

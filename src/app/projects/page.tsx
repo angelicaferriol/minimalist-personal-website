@@ -1,59 +1,72 @@
-import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { getProjects } from '@/lib/notion';
+import { ProjectSection } from '@/components/project-section';
 
-const projects = [
-  {
-    name: "Examora",
-    description: "online examination system",
-    link: "https://github.com/angelicaferriol/online-examination-system"
-  },
-  {
-    name: "Agrigorithm",
-    description: "from farm to your home",
-    link: "#"
-  },
-  {
-    name: "Profile-Up",
-    description: "leave reviews to your professors",
-    link: "https://www.figma.com/proto/Epuw9aNAgagVt7IxIBdyfs/-HCI--PROFILE-UP?node-id=132-1268&t=AqLxRmLSiR7xylPP-1"
-  },
-  {
-    name: "Hora",
-    description: "manage your schedule better",
-    link: "https://www.figma.com/proto/NZWx3t0zp7M2BYUYGWsmp4/Appdev---Webdev?node-id=0-1&t=AqLxRmLSiR7xylPP-1"
-  }
-];
+export const revalidate = 60;
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const projects = await getProjects();
+
+  // Group projects by category
+  const groupedProjects = projects.reduce((acc: any, project: any) => {
+    const category = project.category || 'Uncategorized';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(project);
+    return acc;
+  }, {});
+
+  // Define custom sort order for projects as arranged in the database
+  const PROJECT_ORDER = [
+    "Examora",
+    "Agrigorithm",
+    "Personal Website",
+    "Profile-UP",
+    "HORA",
+    "Gdrive File Links",
+    "Whack-A-Mole",
+    "DataCamp Projects",
+    "Ocean Related Programs"
+  ];
+
+  // Sort projects within each category
+  Object.keys(groupedProjects).forEach(category => {
+    groupedProjects[category].sort((a: any, b: any) => {
+      const ai = PROJECT_ORDER.indexOf(a.name);
+      const bi = PROJECT_ORDER.indexOf(b.name);
+      if (ai !== -1 && bi !== -1) return ai - bi;
+      if (ai !== -1) return -1;
+      if (bi !== -1) return 1;
+      return 0;
+    });
+  });
+
+  // Define category layout sorting order
+  const CATEGORY_ORDER = ['Design & Development', 'Data Science'];
+  const categories = Object.keys(groupedProjects).sort((a, b) => {
+    const ai = CATEGORY_ORDER.indexOf(a);
+    const bi = CATEGORY_ORDER.indexOf(b);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return a.localeCompare(b);
+  });
+
   return (
-    <div className="flex flex-col gap-8 w-full max-w-2xl mx-auto py-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {projects.map((project, idx) => {
-          const isExternal = project.link.startsWith("http");
-          return (
-            <Link 
-              key={idx} 
-              href={project.link}
-              target={isExternal ? "_blank" : undefined}
-              className="group flex flex-col justify-between p-5 border border-border rounded-xl hover:bg-muted/30 transition-colors h-32"
-            >
-              <div className="flex flex-col gap-1">
-                <h3 className="font-medium text-foreground flex items-center gap-1.5">
-                  {project.name}
-                  {isExternal && (
-                    <ArrowUpRight className="w-3.5 h-3.5 opacity-0 -translate-y-0.5 translate-x-0.5 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all duration-300 text-muted-foreground" />
-                  )}
-                </h3>
-                {project.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {project.description}
-                  </p>
-                )}
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+    <div className="flex flex-col gap-12 w-full max-w-2xl mx-auto pt-0 pb-8">
+      {projects.length === 0 ? (
+        <p className="text-muted-foreground text-sm">No projects found. Add some in Notion!</p>
+      ) : (
+        <div className="flex flex-col gap-14">
+          {categories.map((category) => (
+            <ProjectSection 
+              key={category} 
+              title={category} 
+              projects={groupedProjects[category]} 
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -22,7 +22,7 @@ export default async function WritingPage() {
     groupedEssays[category].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
   });
 
-  const CATEGORY_ORDER = ['Personal Essay', 'Daily Thoughts'];
+  const CATEGORY_ORDER = ['Daily Thoughts', 'Personal Essay'];
   const categories = Object.keys(groupedEssays).sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a);
     const bi = CATEGORY_ORDER.indexOf(b);
@@ -33,7 +33,7 @@ export default async function WritingPage() {
   });
 
   return (
-    <div className="flex flex-col gap-12 w-full max-w-2xl mx-auto py-8">
+    <div className="flex flex-col gap-12 w-full max-w-2xl mx-auto pt-0 pb-8">
       {essays.length === 0 ? (
         <p className="text-muted-foreground text-sm">No essays found yet. Add some in Notion!</p>
       ) : (
