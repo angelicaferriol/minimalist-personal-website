@@ -11,6 +11,10 @@ function isNotionAuthError(error: unknown) {
   return APIResponseError.isAPIResponseError(error) && error.code === APIErrorCode.Unauthorized;
 }
 
+function isNotionUnavailableError(error: unknown) {
+  return APIResponseError.isAPIResponseError(error) && error.code === APIErrorCode.ObjectNotFound;
+}
+
 export const getEssays = async () => {
   if (!process.env.NOTION_WRITING_DB_ID) {
     console.warn("NOTION_WRITING_DB_ID is missing");
@@ -29,10 +33,14 @@ export const getEssays = async () => {
       console.warn('NOTION_API_KEY is invalid or revoked; returning no essays');
       return [];
     }
+    if (isNotionUnavailableError(error)) {
+      console.warn('NOTION_WRITING_DB_ID is not shared with the integration or does not exist; returning no essays');
+      return [];
+    }
     throw error;
   }
 
-  return response.results.map((page: any) => {
+  const essays = response.results.map((page: any) => {
     // Dynamically check for different property names to avoid crashes
     const titleProp = page.properties.Title || page.properties.Name;
     const dateProp = page.properties['Date Created'] || page.properties.Date;
@@ -48,6 +56,8 @@ export const getEssays = async () => {
       category: page.properties.Category?.select?.name || 'Uncategorized',
     };
   });
+
+  return essays;
 };
 
 export const getEssayBySlug = async (slugOrId: string) => {
@@ -72,6 +82,10 @@ export const getEssayBySlug = async (slugOrId: string) => {
       page = response.results[0];
     }
   } catch (error) {
+    if (isNotionAuthError(error) || isNotionUnavailableError(error)) {
+      console.warn('NOTION_WRITING_DB_ID is not accessible; unable to load essay content');
+      return null;
+    }
     // If querying by Slug fails (e.g. property doesn't exist), we will catch the error silently
   }
 
@@ -139,6 +153,10 @@ export const getBooks = async () => {
       console.warn('NOTION_API_KEY is invalid or revoked; returning no books');
       return [];
     }
+    if (isNotionUnavailableError(error)) {
+      console.warn('NOTION_READING_DB_ID is not shared with the integration or does not exist; returning no books');
+      return [];
+    }
     throw error;
   }
 
@@ -192,7 +210,12 @@ export const getBookBySlugOrId = async (slugOrId: string) => {
     if (response.results.length > 0) {
       page = response.results[0];
     }
-  } catch (error) {}
+  } catch (error) {
+    if (isNotionAuthError(error) || isNotionUnavailableError(error)) {
+      console.warn('NOTION_READING_DB_ID is not accessible; unable to load book content');
+      return null;
+    }
+  }
 
   if (!page) {
     try {
@@ -264,6 +287,10 @@ export const getGalleryImages = async () => {
   } catch (error) {
     if (isNotionAuthError(error)) {
       console.warn('NOTION_API_KEY is invalid or revoked; returning no gallery images');
+      return [];
+    }
+    if (isNotionUnavailableError(error)) {
+      console.warn('NOTION_GALLERY_DB_ID is not shared with the integration or does not exist; returning no gallery images');
       return [];
     }
     throw error;
