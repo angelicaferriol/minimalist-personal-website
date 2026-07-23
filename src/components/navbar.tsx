@@ -13,15 +13,15 @@ export function Navbar() {
   };
 
   return (
-    <header className="mb-14 flex items-center justify-between">
+    <header className="mb-14 flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
       <Link href="/" className="hover:opacity-80 transition-opacity flex items-center gap-2">
         <img
           src="/cat-transparent.png"
           alt="Pixel Kitten"
-          className="w-40 h-auto object-contain"
+          className="w-40 h-auto object-contain shrink-0"
         />
       </Link>
-      <nav className="flex items-center gap-4 text-sm text-muted-foreground font-medium">
+      <nav className="flex w-full flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground font-medium md:w-auto md:justify-end">
         <Link
           href="/writing"
           className={`hover:text-foreground transition-all duration-300 pb-1 border-b-2 ${isActive("/writing")
