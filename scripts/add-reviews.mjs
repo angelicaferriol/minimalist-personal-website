@@ -4,8 +4,16 @@
 import { Client } from '@notionhq/client';
 import { readFileSync } from 'fs';
 
-const NOTION_API_KEY = 'ntn_W92154714594UdUKoWKAcVlquyDoi4dkIwKbIlAWm4p0mc';
-const DATABASE_ID = '17222548ef6381c5b110f811e3c19b6e';
+const NOTION_API_KEY = process.env.NOTION_API_KEY;
+const DATABASE_ID = process.env.NOTION_READING_DB_ID;
+
+if (!NOTION_API_KEY) {
+  throw new Error('NOTION_API_KEY is missing');
+}
+
+if (!DATABASE_ID) {
+  throw new Error('NOTION_READING_DB_ID is missing');
+}
 
 const notion = new Client({ auth: NOTION_API_KEY });
 

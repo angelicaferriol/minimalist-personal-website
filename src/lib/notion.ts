@@ -1,4 +1,4 @@
-import { Client } from '@notionhq/client';
+import { APIErrorCode, APIResponseError, Client } from '@notionhq/client';
 import { NotionToMarkdown } from 'notion-to-md';
 
 const notion = new Client({
@@ -7,6 +7,10 @@ const notion = new Client({
 
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
+function isNotionAuthError(error: unknown) {
+  return APIResponseError.isAPIResponseError(error) && error.code === APIErrorCode.Unauthorized;
+}
+
 export const getEssays = async () => {
   if (!process.env.NOTION_WRITING_DB_ID) {
     console.warn("NOTION_WRITING_DB_ID is missing");
@@ -14,9 +18,19 @@ export const getEssays = async () => {
   }
   
   const databaseId = process.env.NOTION_WRITING_DB_ID;
-  const response = await notion.databases.query({
-    database_id: databaseId,
-  });
+  let response;
+
+  try {
+    response = await notion.databases.query({
+      database_id: databaseId,
+    });
+  } catch (error) {
+    if (isNotionAuthError(error)) {
+      console.warn('NOTION_API_KEY is invalid or revoked; returning no essays');
+      return [];
+    }
+    throw error;
+  }
 
   return response.results.map((page: any) => {
     // Dynamically check for different property names to avoid crashes
@@ -71,9 +85,18 @@ export const getEssayBySlug = async (slugOrId: string) => {
   }
 
   if (!page) return null;
-  
-  const mdblocks = await n2m.pageToMarkdown(page.id);
-  const mdString = n2m.toMarkdownString(mdblocks);
+  let mdString;
+
+  try {
+    const mdblocks = await n2m.pageToMarkdown(page.id);
+    mdString = n2m.toMarkdownString(mdblocks);
+  } catch (error) {
+    if (isNotionAuthError(error)) {
+      console.warn('NOTION_API_KEY is invalid or revoked; unable to load essay content');
+      return null;
+    }
+    throw error;
+  }
   
   const titleProp = (page as any).properties.Title || (page as any).properties.Name;
   const dateProp = (page as any).properties['Date Created'] || (page as any).properties.Date;
@@ -96,20 +119,28 @@ export const getBooks = async () => {
   const allResults: any[] = [];
   let cursor: string | undefined;
 
-  do {
-    const response = await notion.databases.query({
-      database_id: databaseId,
-      start_cursor: cursor,
-      sorts: [
-        {
-          property: 'Title',
-          direction: 'ascending',
-        },
-      ],
-    });
-    allResults.push(...response.results);
-    cursor = response.has_more ? response.next_cursor! : undefined;
-  } while (cursor);
+  try {
+    do {
+      const response = await notion.databases.query({
+        database_id: databaseId,
+        start_cursor: cursor,
+        sorts: [
+          {
+            property: 'Title',
+            direction: 'ascending',
+          },
+        ],
+      });
+      allResults.push(...response.results);
+      cursor = response.has_more ? response.next_cursor! : undefined;
+    } while (cursor);
+  } catch (error) {
+    if (isNotionAuthError(error)) {
+      console.warn('NOTION_API_KEY is invalid or revoked; returning no books');
+      return [];
+    }
+    throw error;
+  }
 
   return allResults.map((page: any) => {
     const titleProp = page.properties.Title || page.properties.Name;
@@ -172,9 +203,18 @@ export const getBookBySlugOrId = async (slugOrId: string) => {
   }
 
   if (!page) return null;
-  
-  const mdblocks = await n2m.pageToMarkdown(page.id);
-  const mdString = n2m.toMarkdownString(mdblocks);
+  let mdString;
+
+  try {
+    const mdblocks = await n2m.pageToMarkdown(page.id);
+    mdString = n2m.toMarkdownString(mdblocks);
+  } catch (error) {
+    if (isNotionAuthError(error)) {
+      console.warn('NOTION_API_KEY is invalid or revoked; unable to load book content');
+      return null;
+    }
+    throw error;
+  }
   
   const titleProp = (page as any).properties.Title || (page as any).properties.Name;
   const authorProp = (page as any).properties.Author;
@@ -209,15 +249,25 @@ export const getGalleryImages = async () => {
   }
   
   const databaseId = process.env.NOTION_GALLERY_DB_ID;
-  const response = await notion.databases.query({
-    database_id: databaseId,
-    sorts: [
-      {
-        property: 'Date',
-        direction: 'descending',
-      },
-    ],
-  });
+  let response;
+
+  try {
+    response = await notion.databases.query({
+      database_id: databaseId,
+      sorts: [
+        {
+          property: 'Date',
+          direction: 'descending',
+        },
+      ],
+    });
+  } catch (error) {
+    if (isNotionAuthError(error)) {
+      console.warn('NOTION_API_KEY is invalid or revoked; returning no gallery images');
+      return [];
+    }
+    throw error;
+  }
 
   return response.results.map((page: any) => {
     // The user might have named their properties differently
