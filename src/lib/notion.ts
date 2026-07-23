@@ -93,17 +93,25 @@ export const getBooks = async () => {
   }
   
   const databaseId = process.env.NOTION_READING_DB_ID;
-  const response = await notion.databases.query({
-    database_id: databaseId,
-    sorts: [
-      {
-        property: 'Title',
-        direction: 'ascending',
-      },
-    ],
-  });
+  const allResults: any[] = [];
+  let cursor: string | undefined;
 
-  return response.results.map((page: any) => {
+  do {
+    const response = await notion.databases.query({
+      database_id: databaseId,
+      start_cursor: cursor,
+      sorts: [
+        {
+          property: 'Title',
+          direction: 'ascending',
+        },
+      ],
+    });
+    allResults.push(...response.results);
+    cursor = response.has_more ? response.next_cursor! : undefined;
+  } while (cursor);
+
+  return allResults.map((page: any) => {
     const titleProp = page.properties.Title || page.properties.Name;
     const authorProp = page.properties.Author;
     const genreProp = page.properties.Genre;
