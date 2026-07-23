@@ -35,26 +35,45 @@ function ThoughtTime({ createdTime }: { createdTime: string }) {
 
 export function DailyThoughts({ essays }: { essays: ThoughtPage[] }) {
   const [expanded, setExpanded] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Group thoughts by date
   const grouped: { [date: string]: ThoughtBlock[] } = {};
 
   essays.forEach(essay => {
-    let dateStr = essay.date;
     const title = essay.title.trim();
     // If the page title itself is a date (e.g. YYYY-MM-DD or MM/DD/YY)
-    if (/^\d{4}-\d{2}-\d{2}$/.test(title) || /^\d{2}\/\d{2}\/\d{2,4}$/.test(title)) {
-      dateStr = title;
-    } else if (dateStr.includes('T')) {
-      dateStr = dateStr.split('T')[0];
-    }
-
-    if (!grouped[dateStr]) {
-      grouped[dateStr] = [];
-    }
+    const isPageTitleADate = /^\d{4}-\d{2}-\d{2}$/.test(title) || /^\d{2}\/\d{2}\/\d{2,4}$/.test(title);
 
     if (essay.thoughts && essay.thoughts.length > 0) {
-      grouped[dateStr].push(...essay.thoughts);
+      essay.thoughts.forEach(thought => {
+        let dateStr: string;
+
+        if (isPageTitleADate) {
+          dateStr = title;
+        } else {
+          if (!mounted) {
+            // Fallback to UTC date during server rendering / initial hydration
+            dateStr = thought.createdTime.split('T')[0];
+          } else {
+            // Client-side local date
+            const localDate = new Date(thought.createdTime);
+            const yyyy = localDate.getFullYear();
+            const mm = String(localDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(localDate.getDate()).padStart(2, '0');
+            dateStr = `${yyyy}-${mm}-${dd}`;
+          }
+        }
+
+        if (!grouped[dateStr]) {
+          grouped[dateStr] = [];
+        }
+        grouped[dateStr].push(thought);
+      });
     }
   });
 
