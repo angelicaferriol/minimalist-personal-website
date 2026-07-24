@@ -16,9 +16,14 @@ export function Navbar() {
     <header className="mb-4 md:mb-6 flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
       <Link href="/" className="hover:opacity-80 transition-opacity flex items-center gap-2">
         <img
-          src="/cat-transparent.png"
+          src="/cat-black.PNG"
           alt="Pixel Kitten"
-          className="w-40 h-auto object-contain shrink-0"
+          className="w-40 h-auto object-contain shrink-0 dark:hidden"
+        />
+        <img
+          src="/cat-white.PNG"
+          alt="Pixel Kitten"
+          className="w-40 h-auto object-contain shrink-0 hidden dark:block"
         />
       </Link>
       <nav className="flex w-full flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground font-medium md:w-auto md:justify-end">

@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# temp chrome profile (used by browser subagents)
+/temp-chrome-profile/
