@@ -356,6 +356,7 @@ export const getGalleryImages = async () => {
       coverType: cover?.type || 'image',
       media, // all media items for carousel (images + videos)
       category,
+      url: page.properties.URL?.url || null,
     };
   }).filter((item: any) => item !== null && item.imageUrl !== null);
 };

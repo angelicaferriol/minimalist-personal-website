@@ -1,5 +1,6 @@
 import { getGalleryImages } from "@/lib/notion";
 import { GalleryGrid } from "@/components/gallery-grid";
+import { VideoList } from "@/components/video-list";
 
 export const revalidate = 60;
 
@@ -9,12 +10,10 @@ export default async function GalleryPage() {
   // Group images by category
   const groupedImages = images.reduce((acc: any, img: any) => {
     let category = img.category || 'Uncategorized';
-    // Normalize names (e.g. hearbeats/heartbeats -> Heartbeats, brushstrokes -> Brushstrokes)
+    // Normalize names (e.g. video logs -> Video Logs)
     const lowerCategory = category.toLowerCase();
-    if (lowerCategory === 'hearbeats' || lowerCategory === 'heartbeats') {
-      category = 'Heartbeats';
-    } else if (lowerCategory === 'brushstrokes') {
-      category = 'Brushstrokes';
+    if (lowerCategory === 'video logs') {
+      category = 'Video Logs';
     } else {
       category = category.charAt(0).toUpperCase() + category.slice(1);
     }
@@ -27,7 +26,7 @@ export default async function GalleryPage() {
   }, {});
 
   // Define preferred category order
-  const CATEGORY_ORDER = ['Life', 'Art', 'Heartbeats', 'Brushstrokes'];
+  const CATEGORY_ORDER = ['Life', 'Video Logs', 'Art'];
   const categories = Object.keys(groupedImages).sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a);
     const bi = CATEGORY_ORDER.indexOf(b);
@@ -44,7 +43,11 @@ export default async function GalleryPage() {
       ) : (
         <div className="flex flex-col gap-14">
           {categories.map(category => (
-            <GalleryGrid key={category} title={category} images={groupedImages[category]} />
+            category === 'Video Logs' ? (
+              <VideoList key={category} title={category} videos={groupedImages[category]} />
+            ) : (
+              <GalleryGrid key={category} title={category} images={groupedImages[category]} />
+            )
           ))}
         </div>
       )}

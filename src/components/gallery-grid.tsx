@@ -25,6 +25,15 @@ export function GalleryGrid({ title, images }: { title: string, images: any[] })
   const displayImages = expanded ? images : images.slice(0, 9);
   const hasMore = images.length > 9;
 
+  // Preloading computations
+  const nextCarouselIndex = totalCarouselItems > 1 ? (carouselIndex + 1) % totalCarouselItems : 0;
+  const nextMedia = totalCarouselItems > 1 ? mediaItems[nextCarouselIndex] : null;
+
+  const nextPostIndex = selectedIndex !== null ? (selectedIndex + 1) % images.length : 0;
+  const nextPost = images[nextPostIndex] ?? null;
+  const nextPostMediaUrl = nextPost?.media?.[0]?.url || nextPost?.imageUrl;
+  const nextPostMediaType = nextPost?.media?.[0]?.type || nextPost?.coverType || 'image';
+
   // Reset carousel index when opening a different post
   useEffect(() => {
     setCarouselIndex(0);
@@ -196,9 +205,31 @@ export function GalleryGrid({ title, images }: { title: string, images: any[] })
               <LoadingImage 
                 src={currentMedia?.url || selectedPost.imageUrl} 
                 alt={selectedPost.title} 
-                className="max-w-full max-h-[85vh] object-contain rounded-md shadow-2xl pointer-events-auto"
-                wrapperClassName="flex items-center justify-center max-w-full max-h-[85vh]"
+                priority
+                sizes="100vw"
+                className="object-contain rounded-md shadow-2xl pointer-events-auto"
+                wrapperClassName="w-full h-[85vh]"
               />
+            )}
+
+            {/* Background preloading for next items */}
+            {nextMedia && nextMedia.type === 'image' && !isHeicUrl(nextMedia.url) && (
+              <div className="hidden" aria-hidden="true">
+                <LoadingImage 
+                  src={nextMedia.url} 
+                  alt="preload next media" 
+                  priority
+                />
+              </div>
+            )}
+            {nextPostMediaUrl && nextPostMediaType === 'image' && !isHeicUrl(nextPostMediaUrl) && (
+              <div className="hidden" aria-hidden="true">
+                <LoadingImage 
+                  src={nextPostMediaUrl} 
+                  alt="preload next post media" 
+                  priority
+                />
+              </div>
             )}
 
             {/* Dot indicators */}

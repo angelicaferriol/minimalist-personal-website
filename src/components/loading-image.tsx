@@ -1,15 +1,26 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
-interface LoadingImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface LoadingImageProps {
   src: string;
   alt?: string;
   className?: string;
   wrapperClassName?: string;
+  sizes?: string;
+  priority?: boolean;
 }
 
-export function LoadingImage({ src, alt, className, wrapperClassName = '', ...props }: LoadingImageProps) {
+export function LoadingImage({ 
+  src, 
+  alt = '', 
+  className = '', 
+  wrapperClassName = '', 
+  sizes = '(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 20vw',
+  priority = false,
+  ...props 
+}: LoadingImageProps) {
   const [loaded, setLoaded] = useState(false);
 
   return (
@@ -19,9 +30,12 @@ export function LoadingImage({ src, alt, className, wrapperClassName = '', ...pr
           Loading...
         </div>
       )}
-      <img
+      <Image
         src={src}
         alt={alt}
+        fill
+        sizes={sizes}
+        priority={priority}
         className={`${className} ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
         onLoad={() => setLoaded(true)}
         {...props}
