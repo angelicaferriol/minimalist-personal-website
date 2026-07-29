@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 
 interface LoadingImageProps {
@@ -22,6 +22,17 @@ export function LoadingImage({
   ...props 
 }: LoadingImageProps) {
   const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Check if image is from AWS S3 (e.g. Notion signed URLs)
+  const isS3 = src.includes('s3.us-west-2.amazonaws.com') || src.includes('prod-files-secure.s3.us-west-2.amazonaws.com');
+
+  useEffect(() => {
+    // If the image has already loaded (e.g. cached), set loaded to true immediately
+    if (imgRef.current?.complete) {
+      setLoaded(true);
+    }
+  }, []);
 
   return (
     <div className={`relative ${wrapperClassName}`}>
@@ -31,11 +42,13 @@ export function LoadingImage({
         </div>
       )}
       <Image
+        ref={imgRef}
         src={src}
         alt={alt}
         fill
         sizes={sizes}
         priority={priority}
+        unoptimized={isS3}
         className={`${className} ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
         onLoad={() => setLoaded(true)}
         {...props}
@@ -43,3 +56,4 @@ export function LoadingImage({
     </div>
   );
 }
+
