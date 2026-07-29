@@ -207,7 +207,7 @@ export function GalleryGrid({ title, images }: { title: string, images: any[] })
                 alt={selectedPost.title} 
                 priority
                 sizes="100vw"
-                className="object-contain rounded-md shadow-2xl pointer-events-auto"
+                className="object-contain rounded-md drop-shadow-2xl pointer-events-auto"
                 wrapperClassName="w-full h-[85vh]"
               />
             )}
