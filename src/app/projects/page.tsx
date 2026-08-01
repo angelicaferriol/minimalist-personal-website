@@ -16,28 +16,20 @@ export default async function ProjectsPage() {
     return acc;
   }, {});
 
-  // Define custom sort order for projects as arranged in the database
-  const PROJECT_ORDER = [
-    "Examora",
-    "Agrigorithm",
-    "Personal Website",
-    "Profile-UP",
-    "HORA",
-    "Gdrive File Links",
-    "Whack-A-Mole",
-    "DataCamp Projects",
-    "Ocean Related Programs"
-  ];
-
-  // Sort projects within each category
+  // Sort projects within each category by their arrangement number from the database
   Object.keys(groupedProjects).forEach(category => {
     groupedProjects[category].sort((a: any, b: any) => {
-      const ai = PROJECT_ORDER.indexOf(a.name);
-      const bi = PROJECT_ORDER.indexOf(b.name);
-      if (ai !== -1 && bi !== -1) return ai - bi;
-      if (ai !== -1) return -1;
-      if (bi !== -1) return 1;
-      return 0;
+      const aVal = a.arrangement;
+      const bVal = b.arrangement;
+      
+      if (aVal !== null && bVal !== null) {
+        return aVal - bVal;
+      }
+      if (aVal !== null) return -1;
+      if (bVal !== null) return 1;
+      
+      // Fallback to alphabetical sorting if arrangement is missing
+      return a.name.localeCompare(b.name);
     });
   });
 

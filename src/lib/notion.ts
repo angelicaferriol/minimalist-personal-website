@@ -398,12 +398,14 @@ export const getProjects = async () => {
     const textProp = page.properties.Text;
     const techProp = page.properties['Tech Stacks'];
     const categoryProp = page.properties.Category;
+    const arrangementProp = page.properties.Arrangement;
 
     const name = nameProp?.title?.[0]?.plain_text || 'Untitled';
     const link = linkProp?.url || '#';
     const description = textProp?.rich_text?.[0]?.plain_text || '';
     const techStacks = techProp?.multi_select?.map((s: any) => s.name) || [];
     const category = categoryProp?.select?.name || 'Uncategorized';
+    const arrangement = typeof arrangementProp?.number === 'number' ? arrangementProp.number : null;
 
     return {
       id: page.id,
@@ -412,6 +414,7 @@ export const getProjects = async () => {
       description,
       techStacks,
       category,
+      arrangement,
     };
   });
 };
