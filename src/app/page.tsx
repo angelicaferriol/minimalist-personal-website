@@ -6,10 +6,10 @@ export default function Home() {
     <div className="flex flex-col gap-12">
       <section className="flex flex-col gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">
-          hey, this is n.
+          hey, this is angelica
         </h1>
         <p className="text-muted-foreground leading-relaxed">
-          a computer science student and dev intern, who loves building and designing stuffs, writing tiny thoughts, and reading good books. this is my corner of the internet.
+          a computer science student who loves building and designing stuffs, writing tiny thoughts, and reading good books. this is my corner of the internet.
         </p>
       </section>
 
@@ -22,8 +22,8 @@ export default function Home() {
         <ul className="flex flex-col gap-3 text-sm">
           <li className="flex items-center justify-between group">
             <span className="text-muted-foreground">building</span>
-            <Link 
-              href="https://github.com/angelicaferriol/profile-up" 
+            <Link
+              href="https://github.com/angelicaferriol/profile-up"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4"
