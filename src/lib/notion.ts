@@ -45,10 +45,21 @@ export const getEssays = async () => {
     const titleProp = page.properties.Title || page.properties.Name;
     const dateProp = page.properties['Date Created'] || page.properties.Date;
     const slugProp = page.properties.Slug;
-    const category = page.properties.Category?.select?.name || 'Uncategorized';
+    const categoryProp = page.properties.Category || page.properties.category || page.properties.Tags || page.properties.tags;
+
+    let category = 'Uncategorized';
+    if (categoryProp?.select?.name) {
+      category = categoryProp.select.name.trim();
+    } else if (categoryProp?.multi_select && categoryProp.multi_select.length > 0) {
+      category = categoryProp.multi_select[0].name.trim();
+    } else if (categoryProp?.status?.name) {
+      category = categoryProp.status.name.trim();
+    }
+
+    const isDailyThoughts = category.toLowerCase().replace(/[\s_-]+/g, '').includes('dailythought');
 
     let thoughts: any[] = [];
-    if (category === 'Daily Thoughts') {
+    if (isDailyThoughts) {
       try {
         const blocksResponse = await notion.blocks.children.list({
           block_id: page.id,

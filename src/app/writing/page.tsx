@@ -11,7 +11,9 @@ function isFanfictionCategory(category: string): boolean {
 
 const CATEGORY_ORDER = [
   'Daily Thoughts',
+  'Daily Thought',
   'Personal Essay',
+  'Personal Essays',
   'Poem, Proses, Short Stories',
   'Poem, Prose, Short Stories',
   'Poem Proses Short Stories',
@@ -89,7 +91,8 @@ export default async function WritingPage() {
       ) : (
         <div className="flex flex-col gap-14">
           {categories.map(category => {
-            if (category.toLowerCase() === 'daily thoughts') {
+            const isDaily = category.toLowerCase().replace(/[\s_-]+/g, '').includes('dailythought');
+            if (isDaily) {
               return (
                 <DailyThoughts key={category} essays={groupedEssays[category]} />
               );

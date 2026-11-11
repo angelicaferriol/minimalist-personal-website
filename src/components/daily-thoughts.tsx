@@ -74,6 +74,31 @@ export function DailyThoughts({ essays }: { essays: ThoughtPage[] }) {
         }
         grouped[dateStr].push(thought);
       });
+    } else if (essay.title && !isPageTitleADate) {
+      let dateStr: string;
+      const rawDate = essay.date || essay.createdTime;
+      if (!mounted) {
+        dateStr = (rawDate || '').split('T')[0] || 'Undated';
+      } else {
+        const localDate = new Date(rawDate);
+        if (isNaN(localDate.getTime())) {
+          dateStr = 'Undated';
+        } else {
+          const yyyy = localDate.getFullYear();
+          const mm = String(localDate.getMonth() + 1).padStart(2, '0');
+          const dd = String(localDate.getDate()).padStart(2, '0');
+          dateStr = `${yyyy}-${mm}-${dd}`;
+        }
+      }
+
+      if (!grouped[dateStr]) {
+        grouped[dateStr] = [];
+      }
+      grouped[dateStr].push({
+        id: essay.id,
+        text: essay.description || essay.title,
+        createdTime: rawDate,
+      });
     }
   });
 
