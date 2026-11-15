@@ -15,6 +15,66 @@ function isNotionUnavailableError(error: unknown) {
   return APIResponseError.isAPIResponseError(error) && error.code === APIErrorCode.ObjectNotFound;
 }
 
+function extractNotionDate(page: any): string {
+  // We want the user-specified date in Notion, NOT the time they added it (created_time).
+  const propEntries = Object.entries(page.properties || {}) as [string, any][];
+
+  // 1. Look for known date property names with a valid date.start
+  const priorityNames = [
+    'date created',
+    'date',
+    'date written',
+    'written date',
+    'written',
+    'date published',
+    'publish date',
+    'published',
+    'date finished',
+  ];
+
+  for (const name of priorityNames) {
+    const match = propEntries.find(([key]) => key.trim().toLowerCase() === name);
+    if (match) {
+      const prop = match[1];
+      if (prop?.type === 'date' && prop.date?.start) {
+        return prop.date.start;
+      }
+      if (prop?.type === 'formula' && prop.formula?.date?.start) {
+        return prop.formula.date.start;
+      }
+      if (prop?.type === 'rich_text' && prop.rich_text?.[0]?.plain_text?.trim()) {
+        const textDate = prop.rich_text[0].plain_text.trim();
+        if (!isNaN(Date.parse(textDate))) {
+          return textDate;
+        }
+      }
+    }
+  }
+
+  // 2. Scan ALL properties for ANY user-specified date property (type === 'date') with a non-null date.start
+  for (const [, prop] of propEntries) {
+    if (prop?.type === 'date' && prop.date?.start) {
+      return prop.date.start;
+    }
+    if (prop?.type === 'formula' && prop.formula?.date?.start) {
+      return prop.formula.date.start;
+    }
+  }
+
+  // 3. Fallback: check if any property name contains 'date' and has text
+  for (const [key, prop] of propEntries) {
+    if (key.toLowerCase().includes('date') && prop?.type === 'rich_text' && prop.rich_text?.[0]?.plain_text?.trim()) {
+      const textDate = prop.rich_text[0].plain_text.trim();
+      if (!isNaN(Date.parse(textDate))) {
+        return textDate;
+      }
+    }
+  }
+
+  // 4. Only if no user-specified date exists anywhere, fallback to page.created_time
+  return page.created_time;
+}
+
 export const getEssays = async () => {
   if (!process.env.NOTION_WRITING_DB_ID) {
     console.warn("NOTION_WRITING_DB_ID is missing");
@@ -22,12 +82,18 @@ export const getEssays = async () => {
   }
   
   const databaseId = process.env.NOTION_WRITING_DB_ID;
-  let response;
+  const allPages: any[] = [];
+  let cursor: string | undefined;
 
   try {
-    response = await notion.databases.query({
-      database_id: databaseId,
-    });
+    do {
+      const response = await notion.databases.query({
+        database_id: databaseId,
+        start_cursor: cursor,
+      });
+      allPages.push(...response.results);
+      cursor = response.has_more ? response.next_cursor! : undefined;
+    } while (cursor);
   } catch (error) {
     if (isNotionAuthError(error)) {
       console.warn('NOTION_API_KEY is invalid or revoked; returning no essays');
@@ -40,10 +106,9 @@ export const getEssays = async () => {
     throw error;
   }
 
-  const essays = await Promise.all(response.results.map(async (page: any) => {
+  const essays = await Promise.all(allPages.map(async (page: any) => {
     // Dynamically check for different property names to avoid crashes
     const titleProp = page.properties.Title || page.properties.Name;
-    const dateProp = page.properties['Date Created'] || page.properties.Date;
     const slugProp = page.properties.Slug;
     const categoryProp = page.properties.Category || page.properties.category || page.properties.Tags || page.properties.tags;
 
@@ -61,10 +126,18 @@ export const getEssays = async () => {
     let thoughts: any[] = [];
     if (isDailyThoughts) {
       try {
-        const blocksResponse = await notion.blocks.children.list({
-          block_id: page.id,
-        });
-        thoughts = blocksResponse.results
+        let blockCursor: string | undefined;
+        const allBlocks: any[] = [];
+        do {
+          const blocksResponse = await notion.blocks.children.list({
+            block_id: page.id,
+            start_cursor: blockCursor,
+          });
+          allBlocks.push(...blocksResponse.results);
+          blockCursor = blocksResponse.has_more ? blocksResponse.next_cursor! : undefined;
+        } while (blockCursor);
+
+        thoughts = allBlocks
           .map((block: any) => {
             const type = block.type;
             const richText = block[type]?.rich_text;
@@ -88,7 +161,7 @@ export const getEssays = async () => {
       title: titleProp?.title?.[0]?.plain_text || 'Untitled',
       // If they don't have a Slug property, fallback to using the Notion page ID as the URL
       slug: slugProp?.rich_text?.[0]?.plain_text || page.id,
-      date: dateProp?.date?.start || page.created_time,
+      date: extractNotionDate(page),
       description: page.properties.Description?.rich_text?.[0]?.plain_text || '',
       category,
       createdTime: page.created_time,
@@ -153,12 +226,11 @@ export const getEssayBySlug = async (slugOrId: string) => {
   }
   
   const titleProp = (page as any).properties.Title || (page as any).properties.Name;
-  const dateProp = (page as any).properties['Date Created'] || (page as any).properties.Date;
 
   return {
     id: page.id,
     title: titleProp?.title?.[0]?.plain_text || 'Untitled',
-    date: dateProp?.date?.start || (page as any).created_time,
+    date: extractNotionDate(page),
     content: mdString.parent,
   };
 };

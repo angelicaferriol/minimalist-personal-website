@@ -4,6 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 
+function formatDate(dateStr: string) {
+  if (!dateStr) return '';
+  const isoStr = dateStr.includes('T') ? dateStr : `${dateStr}T12:00:00`;
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
 export function CategoryList({ category, essays }: { category: string, essays: any[] }) {
   const [expanded, setExpanded] = useState(false);
   
@@ -41,11 +53,7 @@ export function CategoryList({ category, essays }: { category: string, essays: a
                   </span>
                 ) : (
                   <time className="text-xs text-muted-foreground shrink-0 tabular-nums">
-                    {new Date(essay.date).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
+                    {formatDate(essay.date)}
                   </time>
                 )}
               </Link>

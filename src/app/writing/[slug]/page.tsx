@@ -7,6 +7,18 @@ import { TextResizer } from '@/components/text-resizer';
 
 export const revalidate = 60;
 
+function formatEssayDate(dateStr: string) {
+  if (!dateStr) return '';
+  const isoStr = dateStr.includes('T') ? dateStr : `${dateStr}T12:00:00`;
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
 export default async function EssayPage({ params }: { params: { slug: string } }) {
   const { slug } = await params;
   const essay = await getEssayBySlug(slug);
@@ -27,11 +39,7 @@ export default async function EssayPage({ params }: { params: { slug: string } }
       
       <TextResizer 
         title={essay.title} 
-        date={new Date(essay.date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        })}
+        date={formatEssayDate(essay.date)}
       >
         <ReactMarkdown>{essay.content}</ReactMarkdown>
       </TextResizer>
