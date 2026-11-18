@@ -9,6 +9,7 @@ export const revalidate = 60;
 
 function formatEssayDate(dateStr: string) {
   if (!dateStr) return '';
+  if (dateStr === '2016-2020' || dateStr === '2016–2020') return '2016-2020';
   const isoStr = dateStr.includes('T') ? dateStr : `${dateStr}T12:00:00`;
   const d = new Date(isoStr);
   if (isNaN(d.getTime())) return dateStr;

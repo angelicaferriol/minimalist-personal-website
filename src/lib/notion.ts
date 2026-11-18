@@ -15,7 +15,7 @@ function isNotionUnavailableError(error: unknown) {
   return APIResponseError.isAPIResponseError(error) && error.code === APIErrorCode.ObjectNotFound;
 }
 
-function extractNotionDate(page: any): string {
+function extractNotionDate(page: any): string | null {
   // We want the user-specified date in Notion, NOT the time they added it (created_time).
   const propEntries = Object.entries(page.properties || {}) as [string, any][];
 
@@ -71,7 +71,22 @@ function extractNotionDate(page: any): string {
     }
   }
 
-  // 4. Only if no user-specified date exists anywhere, fallback to page.created_time
+  return null;
+}
+
+function getEssayDate(page: any, category: string): string {
+  const normCat = category.toLowerCase().replace(/[\s_-]+/g, '');
+  const isProseOrShortStory = normCat.includes('prose') || normCat.includes('shortstor') || normCat.includes('shortstory');
+
+  const specifiedDate = extractNotionDate(page);
+  if (specifiedDate) {
+    return specifiedDate;
+  }
+
+  if (isProseOrShortStory) {
+    return '2016-2020';
+  }
+
   return page.created_time;
 }
 
@@ -161,7 +176,7 @@ export const getEssays = async () => {
       title: titleProp?.title?.[0]?.plain_text || 'Untitled',
       // If they don't have a Slug property, fallback to using the Notion page ID as the URL
       slug: slugProp?.rich_text?.[0]?.plain_text || page.id,
-      date: extractNotionDate(page),
+      date: getEssayDate(page, category),
       description: page.properties.Description?.rich_text?.[0]?.plain_text || '',
       category,
       createdTime: page.created_time,
@@ -226,11 +241,21 @@ export const getEssayBySlug = async (slugOrId: string) => {
   }
   
   const titleProp = (page as any).properties.Title || (page as any).properties.Name;
+  const categoryProp = (page as any).properties.Category || (page as any).properties.category || (page as any).properties.Tags || (page as any).properties.tags;
+
+  let category = 'Uncategorized';
+  if (categoryProp?.select?.name) {
+    category = categoryProp.select.name.trim();
+  } else if (categoryProp?.multi_select && categoryProp.multi_select.length > 0) {
+    category = categoryProp.multi_select[0].name.trim();
+  } else if (categoryProp?.status?.name) {
+    category = categoryProp.status.name.trim();
+  }
 
   return {
     id: page.id,
     title: titleProp?.title?.[0]?.plain_text || 'Untitled',
-    date: extractNotionDate(page),
+    date: getEssayDate(page, category),
     content: mdString.parent,
   };
 };

@@ -6,7 +6,7 @@ export default function Home() {
     <div className="flex flex-col gap-12">
       <section className="flex flex-col gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">
-          hey, this is angelica
+          hey, this is angelica.
         </h1>
         <p className="text-muted-foreground leading-relaxed">
           a computer science student who loves building and designing stuffs, writing tiny thoughts, and reading good books. this is my corner of the internet.
@@ -37,7 +37,7 @@ export default function Home() {
           </li>
           <li className="flex items-center justify-between group">
             <span className="text-muted-foreground">listening</span>
-            <Link href="https://open.spotify.com/track/2B8YSN8znuRfYSkwJusNfQ?si=fdc026eeb9e344aa" target="_blank" className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4 text-right">you dont have to be a star - 109</Link>
+            <Link href="https://open.spotify.com/track/6GHQ5uj7K7OALKq9bcjBVf?si=e040421704774116" target="_blank" className="font-medium group-hover:underline decoration-muted-foreground/50 underline-offset-4 text-right">maybe - &team</Link>
           </li>
         </ul>
       </section>

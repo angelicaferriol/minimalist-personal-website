@@ -68,9 +68,28 @@ export default async function WritingPage() {
     return acc;
   }, {});
 
+  function getEssaySortTime(essay: any): number {
+    if (!essay.date) return 0;
+    if (essay.date === '2016-2020' || essay.date === '2016–2020') {
+      return new Date('2020-01-01T00:00:00Z').getTime();
+    }
+    const t = new Date(essay.date).getTime();
+    return isNaN(t) ? 0 : t;
+  }
+
   // Sort essays within each category by date descending
   Object.keys(groupedEssays).forEach(category => {
-    groupedEssays[category].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    groupedEssays[category].sort((a: any, b: any) => {
+      const timeA = getEssaySortTime(a);
+      const timeB = getEssaySortTime(b);
+      if (timeB !== timeA) return timeB - timeA;
+      const createA = new Date(a.createdTime || 0).getTime();
+      const createB = new Date(b.createdTime || 0).getTime();
+      if (!isNaN(createA) && !isNaN(createB) && createB !== createA) {
+        return createB - createA;
+      }
+      return (a.title || '').localeCompare(b.title || '');
+    });
   });
 
   const categories = Object.keys(groupedEssays)
