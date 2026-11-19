@@ -252,9 +252,13 @@ export const getEssayBySlug = async (slugOrId: string) => {
     category = categoryProp.status.name.trim();
   }
 
+  const slugProp = (page as any).properties.Slug;
+
   return {
     id: page.id,
     title: titleProp?.title?.[0]?.plain_text || 'Untitled',
+    slug: slugProp?.rich_text?.[0]?.plain_text || page.id,
+    category,
     date: getEssayDate(page, category),
     content: mdString.parent,
   };
